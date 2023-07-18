@@ -6,6 +6,7 @@ pub struct Banner<'a> {
     pub layers: &'a [(Rgba<u8>, String)],
     pub render: ImageBuffer<Rgba<u8>, Vec<u8>>,
     pub texture_buffer: &'a TextureBuffer,
+    pub fitness: Option<f64>,
 }
 
 impl<'a> Banner<'a> {
@@ -15,6 +16,7 @@ impl<'a> Banner<'a> {
             layers,
             render: ImageBuffer::new(20, 40),
             texture_buffer,
+            fitness: None,
         };
         banner.render();
         banner
@@ -29,6 +31,16 @@ impl<'a> Banner<'a> {
             let colored_texture = self.colorize_texture(texture.clone(), color);
             imageops::overlay(&mut self.render, &colored_texture, 0, 0);
         }
+    }
+
+    pub fn calculate_fitness(&mut self, target: &ImageBuffer<Rgba<u8>, Vec<u8>>) {
+        self.fitness = Some(self.render.pixels().zip(target.pixels()).map(|(p1, p2)| {
+            let diff_r = p1[0] as f64 - p2[0] as f64;
+            let diff_g = p1[1] as f64 - p2[1] as f64;
+            let diff_b = p1[2] as f64 - p2[2] as f64;
+            let diff_a = p1[3] as f64 - p2[3] as f64;
+            diff_r*diff_r + diff_g*diff_g + diff_b*diff_b + diff_a*diff_a
+        }).sum::<f64>().sqrt());
     }
 
     fn colorize_texture(&self, mut texture: ImageBuffer<Rgba<u8>, Vec<u8>>, color: Rgba<u8>) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
