@@ -1,4 +1,3 @@
-// File: src/modules/population.rs
 use super::banner::Banner;
 use super::texture_buffer::TextureBuffer;
 use image::{ImageBuffer, Rgba};
@@ -11,7 +10,7 @@ pub struct Population<'a> {
 }
 
 impl<'a> Population<'a> {
-    pub fn new(texture_buffer: &'a TextureBuffer, target: &'a mut ImageBuffer<image::Rgba<u8>, Vec<u8>>, size: usize) -> Self {
+    pub fn new(texture_buffer: &'a TextureBuffer, target: &'a ImageBuffer<image::Rgba<u8>, Vec<u8>>, size: usize) -> Self {
         let mut banners = Vec::with_capacity(size);
         let mut rng = rand::thread_rng();
         for _ in 0..size {
@@ -35,8 +34,27 @@ impl<'a> Population<'a> {
         }
     }
 
-    pub fn elitist_selection(&mut self, count: usize) {
-        self.banners.sort_unstable_by(|a, b| a.fitness.partial_cmp(&b.fitness).unwrap());
-        self.banners.truncate(count);
+    pub fn elitist_selection(&mut self, count: usize) -> Vec<Banner<'a>> {
+        let mut sorted_banners = self.banners.clone();
+        sorted_banners.sort_unstable_by(|a, b| a.fitness.partial_cmp(&b.fitness).unwrap());
+        sorted_banners.truncate(count);
+        sorted_banners
     }
+
+    pub fn fitness_proportionate_selection(&self) -> &Banner<'a> {
+        let total_fitness: f64 = self.banners.iter().map(|b| 1.0 / b.fitness.unwrap()).sum();
+
+        let mut rng = rand::thread_rng();
+        let mut threshold: f64 = rng.gen_range(0.0..total_fitness);
+
+        for banner in &self.banners {
+            threshold -= 1.0 / banner.fitness.unwrap();
+            if threshold <= 0.0 {
+                return banner;
+            }
+        }
+
+        &self.banners[0]
+    }
+
 }

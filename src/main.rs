@@ -19,8 +19,8 @@ fn main() {
     let mut target = image::open("./src/renders/atlas.png").unwrap().to_rgba();
     let mut population = Population::new(&texture_buffer, &mut target, 300);
     population.calculate_fitness();
-    population.elitist_selection(5);
-    for (i, banner) in population.banners.iter().enumerate() {
+    let top_banners = population.elitist_selection(5);
+    for (i, banner) in top_banners.iter().enumerate() {
         banner.save(&format!("./src/renders/banner_{}_RMSE_{}.png", i, banner.fitness.unwrap()));
     }
 }
