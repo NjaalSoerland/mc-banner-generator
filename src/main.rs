@@ -2,33 +2,25 @@ mod modules {
     pub mod banner;
     pub mod texture_buffer;
     pub mod utils;
+    pub mod population;
 }
 
 use modules::{
-    banner::Banner,
     texture_buffer::TextureBuffer,
     utils::COLORS,
+    population::Population,
 };
 
-use image::Rgba;
-use rand::Rng;
+use image::open;
 
 
 fn main() {
     let texture_buffer = TextureBuffer::new("./src/textures");
-
-    let mut rng = rand::thread_rng();
-
-    for i in 0..=6 {
-        let mut layers = Vec::new();
-        let base_color = COLORS[rng.gen_range(0..COLORS.len())].0;
-        for _ in 0..i {
-            let (color, _) = COLORS[rng.gen_range(0..COLORS.len())];
-            let texture_name = texture_buffer.textures.keys().nth(rng.gen_range(0..texture_buffer.textures.len())).unwrap().to_string();
-            layers.push((color, texture_name));
-        }
-
-        let banner = Banner::new(base_color, &layers, &texture_buffer);
-        banner.save_render(&format!("./src/renders/output_{}.png", i));
+    let mut target = image::open("./src/renders/atlas.png").unwrap().to_rgba();
+    let mut population = Population::new(&texture_buffer, &mut target, 300);
+    population.calculate_fitness();
+    population.elitist_selection(5);
+    for (i, banner) in population.banners.iter().enumerate() {
+        banner.save(&format!("./src/renders/banner_{}_RMSE_{}.png", i, banner.fitness.unwrap()));
     }
 }

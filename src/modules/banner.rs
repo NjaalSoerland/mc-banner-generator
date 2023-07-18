@@ -3,15 +3,15 @@ use image::{Rgba, ImageBuffer, imageops};
 
 pub struct Banner<'a> {
     pub base_color: Rgba<u8>,
-    pub layers: &'a [(Rgba<u8>, String)],
+    pub layers: Vec<(Rgba<u8>, String)>,
     pub render: ImageBuffer<Rgba<u8>, Vec<u8>>,
     pub texture_buffer: &'a TextureBuffer,
     pub fitness: Option<f64>,
 }
 
 impl<'a> Banner<'a> {
-    pub fn new(base_color: Rgba<u8>, layers: &'a [(Rgba<u8>, String)], texture_buffer: &'a TextureBuffer) -> Self {
-        let mut banner = Banner { 
+    pub fn new(base_color: Rgba<u8>, layers: Vec<(Rgba<u8>, String)>, texture_buffer: &'a TextureBuffer) -> Self {
+        let mut banner = Self {
             base_color,
             layers,
             render: ImageBuffer::new(20, 40),
@@ -23,12 +23,11 @@ impl<'a> Banner<'a> {
     }
 
     pub fn render(&mut self) {
-        let base_texture = self.texture_buffer.base.clone();
-        self.render = self.colorize_texture(base_texture, self.base_color);
+        self.render = self.colorize_texture(self.texture_buffer.base.clone(), self.base_color);
 
-        for &(color, ref texture_name) in self.layers {
-            let texture = self.texture_buffer.textures.get(texture_name).unwrap();
-            let colored_texture = self.colorize_texture(texture.clone(), color);
+        for (color, texture_name) in &self.layers { 
+            let texture = self.texture_buffer.textures.get(texture_name).unwrap().clone();
+            let colored_texture = self.colorize_texture(texture, *color);
             imageops::overlay(&mut self.render, &colored_texture, 0, 0);
         }
     }
@@ -66,7 +65,7 @@ impl<'a> Banner<'a> {
         texture
     }
 
-    pub fn save_render(&self, path: &str) {
+    pub fn save(&self, path: &str) {
         self.render.save(path).unwrap();
     }
 }
