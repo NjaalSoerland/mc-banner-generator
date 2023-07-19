@@ -2,8 +2,7 @@
 use super::population::Population;
 use super::banner::Banner;
 use super::texture_buffer::TextureBuffer;
-use rand::Rng;
-use image::Rgba;
+use rayon::prelude::*;
 
 pub struct GA<'a> {
     population: Population<'a>,
@@ -30,23 +29,19 @@ impl<'a> GA<'a> {
                 self.best_individual = Some(best.clone());
             }
 
-            let mut new_banners = Vec::new();
-            while new_banners.len() < self.population.banners.len() {
-                let parent1 = self.population.fitness_proportionate_selection();
-                let parent2 = self.population.fitness_proportionate_selection();
-                let mut child = parent1.crossover(parent2);
-                child.mutate();
-                new_banners.push(child);
-            }
+            let new_banners: Vec<Banner> = (0..self.population.banners.len())
+                .into_par_iter()
+                .map(|_| {
+                    let parent1 = self.population.fitness_proportionate_selection();
+                    let parent2 = self.population.fitness_proportionate_selection();
+                    let mut child = parent1.crossover(parent2);
+                    child.mutate();
+                    child
+                })
+                .collect();
             
             self.population.banners = new_banners;
             self.population.banners.push(best);
-        }
-        
-        self.population.calculate_fitness();
-        let best = self.population.elitist_selection(1)[0].clone();
-        if best.fitness.unwrap() < self.best_individual.as_ref().unwrap().fitness.unwrap() {
-            self.best_individual = Some(best.clone());
         }
     }
 

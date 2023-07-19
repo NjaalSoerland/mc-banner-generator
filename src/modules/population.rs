@@ -3,6 +3,7 @@ use super::texture_buffer::TextureBuffer;
 use image::{ImageBuffer, Rgba};
 use rand::Rng;
 use crate::COLORS;
+use rayon::prelude::*;
 
 pub struct Population<'a> {
     pub banners: Vec<Banner<'a>>,
@@ -29,9 +30,9 @@ impl<'a> Population<'a> {
     }
 
     pub fn calculate_fitness(&mut self) {
-        for banner in &mut self.banners {
+        self.banners.par_iter_mut().for_each(|banner| {
             banner.calculate_fitness(self.target);
-        }
+        });
     }
 
     pub fn elitist_selection(&mut self, count: usize) -> Vec<Banner<'a>> {
