@@ -79,17 +79,19 @@ impl<'a> Banner<'a> {
 
     // -------------------------------------------- Mutation --------------------------------------------
 
-    pub fn mutate(&mut self) {
+    pub fn mutate(&mut self, mutation_rate: f64) {
         let mut rng = rand::thread_rng();
-        let num = rng.gen_range(0..5);
+        if rng.gen::<f64>() < mutation_rate {
+            let num = rng.gen_range(0..5);
 
-        match num {
-            0 => self.mutate_insert(),
-            1 => self.mutate_remove(),
-            2 => self.mutate_shuffle(),
-            3 => self.mutate_change_color(),
-            4 => self.mutate_shuffle_color(),
-            _ => unreachable!(), // This case is actually unreachable due to how we generate the random number.
+            match num {
+                0 => self.mutate_insert(),
+                1 => self.mutate_remove(),
+                2 => self.mutate_shuffle(),
+                3 => self.mutate_change_color(),
+                4 => self.mutate_shuffle_color(),
+                _ => unreachable!(),
+            }
         }
     }
 
