@@ -29,36 +29,12 @@ impl<'a> Banner<'a> {
     // -------------------------------------------- Rendering --------------------------------------------
 
     pub fn render(&mut self) {
-        self.render = self.colorize_texture(self.texture_buffer.base.clone(), self.base_color);
+        self.render = self.texture_buffer.get_colored_texture("base", self.base_color).clone();
 
         for (color, texture_name) in &self.layers { 
-            let texture = self.texture_buffer.textures.get(texture_name).unwrap().clone();
-            let colored_texture = self.colorize_texture(texture, *color);
+            let colored_texture = self.texture_buffer.get_colored_texture(texture_name, *color).clone();
             imageops::overlay(&mut self.render, &colored_texture, 0, 0);
         }
-    }
-
-    fn colorize_texture(&self, mut texture: ImageBuffer<Rgba<u8>, Vec<u8>>, color: Rgba<u8>) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
-        let (width, height) = texture.dimensions();
-
-        for y in 0..height {
-            for x in 0..width {
-                let pixel = texture.get_pixel(x, y);
-
-                let intensity = pixel[0] as f32 / 255.0;
-
-                let new_pixel = Rgba([
-                    (color[0] as f32 * intensity) as u8,
-                    (color[1] as f32 * intensity) as u8,
-                    (color[2] as f32 * intensity) as u8,
-                    pixel[3],
-                ]);
-
-                texture.put_pixel(x, y, new_pixel);
-            }
-        }
-
-        texture
     }
 
     pub fn save(&self, path: &str) {

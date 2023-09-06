@@ -1,6 +1,7 @@
 use image::{Rgba, ImageBuffer, GenericImageView};
 use std::collections::HashMap;
 use std::fs;
+use crate::COLORS;
 
 pub struct TextureBuffer {
     pub base: ImageBuffer<Rgba<u8>, Vec<u8>>,
@@ -24,8 +25,11 @@ impl TextureBuffer {
                 }
             }
         }
-    
-        TextureBuffer { base, textures, colored_textures }
+
+        let mut texture_buffer = TextureBuffer { base, textures, colored_textures };
+        texture_buffer.precompute_colored_textures();
+
+        texture_buffer
     }
     
 
@@ -34,9 +38,15 @@ impl TextureBuffer {
         img.view(1, 1, 20, 40).to_image()
     }
 
-    pub fn get_colored_texture(&mut self, name: &str, color: Rgba<u8>) -> &ImageBuffer<Rgba<u8>, Vec<u8>> {
-        if !self.colored_textures.contains_key(&(name.to_string(), color)) {
-            if let Some(texture) = self.textures.get(name) {
+    pub fn get_colored_texture(&self, name: &str, color: Rgba<u8>) -> &ImageBuffer<Rgba<u8>, Vec<u8>> {
+        self.colored_textures.get(&(name.to_string(), color)).unwrap()
+    }
+
+    pub fn precompute_colored_textures(&mut self) {
+        let mut textures = self.textures.clone();
+        textures.insert("base".to_string(), self.base.clone());
+        for (name, texture) in textures {
+            for &(ref color, _) in COLORS.iter() {
                 let mut colored_texture = texture.clone();
                 let (width, height) = colored_texture.dimensions();
 
@@ -57,11 +67,9 @@ impl TextureBuffer {
                     }
                 }
 
-                self.colored_textures.insert((name.to_string(), color), colored_texture);
+                self.colored_textures.insert((name.to_string(), *color), colored_texture);
             }
         }
-
-        self.colored_textures.get(&(name.to_string(), color)).unwrap()
     }
-
+    
 }
