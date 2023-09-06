@@ -1,6 +1,5 @@
 use image::{Rgba, ImageBuffer, GenericImageView};
 use std::collections::HashMap;
-use crate::COLORS;
 use std::fs;
 
 pub struct TextureBuffer {
@@ -13,7 +12,7 @@ impl TextureBuffer {
     pub fn new(texture_dir: &str) -> Self {
         let base = Self::load_texture("base", texture_dir);
         let mut textures = HashMap::new();
-        let mut colored_textures = HashMap::new();
+        let colored_textures = HashMap::new();
 
         let entries = fs::read_dir(texture_dir).unwrap();
         for entry in entries {

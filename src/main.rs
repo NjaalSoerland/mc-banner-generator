@@ -9,7 +9,6 @@ mod modules {
 use modules::{
     texture_buffer::TextureBuffer,
     utils::COLORS,
-    population::Population,
     ga::GA,
 };
 
@@ -19,7 +18,7 @@ use std::time::Instant;
 
 fn main() {
     let texture_buffer = TextureBuffer::new("./src/textures");
-    let mut target = open("./src/renders/atlas.png").unwrap().to_rgba();
+    let mut target = open("./src/renders/atlas.png").unwrap().to_rgba8();
     
     let pop_size = 300;
     let generations = 100;

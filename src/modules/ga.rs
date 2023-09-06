@@ -3,7 +3,6 @@ use super::banner::Banner;
 use super::texture_buffer::TextureBuffer;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
-use rand::Rng;
 use rayon::prelude::*;
 
 pub struct GA<'a> {
@@ -25,7 +24,7 @@ impl<'a> GA<'a> {
     }
 
     pub fn run(&mut self, generations: usize) {
-        let mut mutation_rate = 1.0;
+        let mut mutation_rate;
 
         let total_time_selection = AtomicUsize::new(0);
         let total_time_crossover = AtomicUsize::new(0);
