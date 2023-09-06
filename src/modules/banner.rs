@@ -79,26 +79,24 @@ impl<'a> Banner<'a> {
 
     // -------------------------------------------- Mutation --------------------------------------------
 
-    pub fn mutate(&mut self, mutation_rate: f64) {
-        let mut rng = rand::thread_rng();
+    pub fn mutate(&mut self, mutation_rate: f64, rng: &mut impl Rng) {
         if rng.gen::<f64>() < mutation_rate {
             let num = rng.gen_range(0..5);
 
             match num {
-                0 => self.mutate_insert(),
-                1 => self.mutate_remove(),
-                2 => self.mutate_shuffle(),
-                3 => self.mutate_change_color(),
-                4 => self.mutate_shuffle_color(),
+                0 => self.mutate_insert(rng),
+                1 => self.mutate_remove(rng),
+                2 => self.mutate_shuffle(rng),
+                3 => self.mutate_change_color(rng),
+                4 => self.mutate_shuffle_color(rng),
                 _ => unreachable!(),
             }
         }
     }
 
-    fn mutate_insert(&mut self) {
+    fn mutate_insert(&mut self, rng: &mut impl Rng) {
         if self.layers.len() >= 6 { return; }
         
-        let mut rng = rand::thread_rng();
         let color = COLORS[rng.gen_range(0..COLORS.len())].0;
         let texture_name = self.texture_buffer.textures.keys().nth(rng.gen_range(0..self.texture_buffer.textures.len())).unwrap().to_string();
         let idx = rng.gen_range(0..self.layers.len() + 1);
@@ -107,24 +105,21 @@ impl<'a> Banner<'a> {
         self.render();
     }
 
-    fn mutate_remove(&mut self) {
+    fn mutate_remove(&mut self, rng: &mut impl Rng) {
         if self.layers.len() == 0 { return; }
 
-        let mut rng = rand::thread_rng();
         let idx = rng.gen_range(0..self.layers.len());
 
         self.layers.remove(idx);
         self.render();
     }
 
-    fn mutate_shuffle(&mut self) {
-        let mut rng = rand::thread_rng();
-        self.layers.shuffle(&mut rng);
+    fn mutate_shuffle(&mut self, rng: &mut impl Rng) {
+        self.layers.shuffle(rng);
         self.render();
     }
 
-    fn mutate_change_color(&mut self) {
-        let mut rng = rand::thread_rng();
+    fn mutate_change_color(&mut self, rng: &mut impl Rng) {
         let color = COLORS[rng.gen_range(0..COLORS.len())].0;
 
         if rng.gen_bool(0.5) || self.layers.is_empty() {
@@ -137,11 +132,10 @@ impl<'a> Banner<'a> {
         self.render();
     }
 
-    fn mutate_shuffle_color(&mut self) {
-        let mut rng = rand::thread_rng();
+    fn mutate_shuffle_color(&mut self, rng: &mut impl Rng) {
         let mut colors: Vec<_> = self.layers.iter().map(|&(color, _)| color).collect();
         colors.push(self.base_color);
-        colors.shuffle(&mut rng);
+        colors.shuffle(rng);
 
         self.base_color = colors.pop().unwrap();
         for (layer, color) in self.layers.iter_mut().zip(colors) {
@@ -153,16 +147,18 @@ impl<'a> Banner<'a> {
 
     // -------------------------------------------- Crossover --------------------------------------------
 
-    pub fn crossover(&self, other: &Self) -> Banner<'a> {
-        let mut rng = rand::thread_rng();
-        let self_idx = rng.gen_range(0..self.layers.len() + 1);
-        let other_idx = rng.gen_range(0..other.layers.len() + 1);
-
-        let mut new_layers = self.layers[..self_idx].to_vec();
-        new_layers.extend(other.layers[other_idx..].iter().cloned());
+    pub fn crossover(&self, other: &Self, rng: &mut impl Rng) -> Banner<'a> {
+        let self_idx = rng.gen_range(0..=self.layers.len());
+        let other_idx = rng.gen_range(0..=other.layers.len());
+    
+        let mut new_layers = Vec::with_capacity(self_idx + other.layers.len() - other_idx);
+        
+        new_layers.extend_from_slice(&self.layers[..self_idx]);
+        new_layers.extend_from_slice(&other.layers[other_idx..]);
+        
         new_layers.truncate(6);
         let base_color = if rng.gen_bool(0.5) { self.base_color } else { other.base_color };
-
+    
         Banner::new(base_color, new_layers, self.texture_buffer)
     }
 }
