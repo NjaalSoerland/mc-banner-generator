@@ -21,7 +21,7 @@ fn main() {
     let mut target = open("./src/renders/atlas.png").unwrap().to_rgba8();
     
     let pop_size = 300;
-    let generations = 100;
+    let generations = 1000;
 
     let start = Instant::now();
 

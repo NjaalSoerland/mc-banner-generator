@@ -2,6 +2,8 @@ use super::texture_buffer::TextureBuffer;
 use image::{Rgba, ImageBuffer, imageops};
 use rand::Rng;
 use rand::prelude::SliceRandom;
+use std::fs::File;
+use std::io::Write;
 use crate::COLORS;
 
 #[derive(Clone)]
@@ -37,8 +39,26 @@ impl<'a> Banner<'a> {
         }
     }
 
+    fn get_color_name(&self, color: Rgba<u8>) -> Option<&'static str> {
+        COLORS.iter().find(|&&(c, _)| c == color).map(|&(_, name)| name)
+    }
+
     pub fn save(&self, path: &str) {
         self.render.save(path).unwrap();
+
+        let mut output = String::new();
+        output.push_str(&format!("Fitness: {}\n", self.fitness.unwrap_or(0.0)));
+
+        let base_color_name = self.get_color_name(self.base_color).unwrap_or("Unknown");
+        output.push_str(&format!("Base Color: {}\n", base_color_name));
+
+        for (color, texture_name) in &self.layers {
+            let color_name = self.get_color_name(*color).unwrap_or("Unknown");
+            output.push_str(&format!("Layer - Color: {}, Texture: {}\n", color_name, texture_name));
+        }
+
+        let mut file = File::create("./src/renders/best.txt").unwrap();
+        file.write_all(output.as_bytes()).unwrap();
     }
 
     // -------------------------------------------- Fitness --------------------------------------------
