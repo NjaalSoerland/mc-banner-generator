@@ -1,25 +1,20 @@
 mod modules {
     pub mod banner;
+    pub mod ga;
+    pub mod population;
     pub mod texture_buffer;
     pub mod utils;
-    pub mod population;
-    pub mod ga;
 }
 
-use modules::{
-    texture_buffer::TextureBuffer,
-    utils::COLORS,
-    ga::GA,
-};
+use modules::{ga::GA, texture_buffer::TextureBuffer, utils::COLORS};
 
 use image::open;
 use std::time::Instant;
 
-
 fn main() {
     let texture_buffer = TextureBuffer::new("./src/textures");
-    let mut target = open("./src/renders/atlas.png").unwrap().to_rgba8();
-    
+    let mut target = open("./src/renders/ent.png").unwrap().to_rgba8();
+
     let pop_size = 300;
     let generations = 1000;
 

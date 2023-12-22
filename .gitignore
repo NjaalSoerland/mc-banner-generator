@@ -1,7 +1,3 @@
-# Minecraft banner textures
-src/textures/
-src/renders/
-
 # Compiled files
 debug/
 target/
