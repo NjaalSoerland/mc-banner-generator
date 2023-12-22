@@ -12,17 +12,19 @@ use image::open;
 use std::time::Instant;
 
 fn main() {
-    let texture_buffer = TextureBuffer::new("./src/textures");
-    let mut target = open("./src/renders/ent.png").unwrap().to_rgba8();
+    let texture_buffer: TextureBuffer = TextureBuffer::new("./src/textures");
+    let mut target: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> =
+        open("./src/renders/ent.png").unwrap().to_rgba8();
 
-    let pop_size = 300;
-    let generations = 1000;
+    let pop_size: usize = 3000;
+    let generations: usize = 10;
 
-    let start = Instant::now();
+    let start: Instant = Instant::now();
 
-    let mut ga = GA::new(&texture_buffer, &mut target, pop_size, 0.8);
+    let mut ga: GA<'_> = GA::new(&texture_buffer, &mut target, pop_size, 0.8);
     ga.run(generations);
-    let best_banner = ga.best();
+    let best_banner: &modules::banner::Banner<'_> = ga.best();
+
     best_banner.save("./src/renders/best.png");
 
     println!("Time elapsed: {:?}", start.elapsed());
